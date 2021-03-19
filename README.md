@@ -1,7 +1,8 @@
 # Tensorflow Learning
 
 ## Introduction
-This project is for learning basic concepts of Deep Learning and Tensorflow
+
+This project is for learning the basic concepts of Deep Learning and Tensorflow. Besides datasets, this project tries to not use Keras to make code cleaner and readable.
 
 ## Environment
 
