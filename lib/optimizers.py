@@ -1,6 +1,42 @@
 import tensorflow as tf
 
 
+class SGD(tf.Module):
+    def __init__(self,
+                 params,
+                 lr=1e-3,
+                 momentum=0.9,
+                 weight_decay=0.0,
+                 name="sgd"):
+
+        super(SGD, self).__init__(name)
+
+        self.params = params
+        self.momentum = momentum
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.step = 0
+        self.exp_avg = []
+
+        for param in self.params:
+            self.exp_avg.append(tf.Variable(
+                initial_value=tf.zeros(param.numpy().shape),
+                trainable=False,
+                name="{}_{}_exp_avg".format(name, param.name)))
+
+    def __call__(self, grads):
+        self.step += 1
+        for i, param in enumerate(self.params):
+            exp_avg = self.exp_avg[i]
+            grad = grads[i]
+
+            if self.weight_decay != 0:
+                grad += self.weight_decay * param
+
+            exp_avg.assign((1 - self.momentum) * grad + self.momentum * exp_avg)
+            param.assign_add(-self.lr * exp_avg)
+
+
 class Adam(tf.Module):
     def __init__(self,
                  params,
