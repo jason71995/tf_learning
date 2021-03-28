@@ -16,7 +16,7 @@ def train(model, optimizer, inputs, labels, batch_size):
         batch_loss = tf.losses.categorical_crossentropy(batch_labels, batch_preds)
         batch_acc = tf.metrics.categorical_accuracy(batch_labels, batch_preds)
         gradients = tf.gradients(batch_loss, model.trainable_variables)
-        optimizer(gradients)
+        optimizer(gradients, model.trainable_variables)
         return batch_loss, batch_acc
 
     shuffle_idx = np.random.permutation(range(inputs.shape[0]))

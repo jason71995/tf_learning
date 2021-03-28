@@ -11,24 +11,22 @@ class SGD(tf.Module):
 
         super(SGD, self).__init__(name)
 
-        self.params = params
         self.momentum = momentum
         self.lr = lr
         self.weight_decay = weight_decay
         self.step = 0
         self.exp_avg = []
 
-        for param in self.params:
+        for param in params:
             self.exp_avg.append(tf.Variable(
                 initial_value=tf.zeros(param.numpy().shape),
                 trainable=False,
                 name="{}_{}_exp_avg".format(name, param.name)))
 
-    def __call__(self, grads):
+    def __call__(self, grads, params):
         self.step += 1
-        for i, param in enumerate(self.params):
+        for i, (grad, param) in enumerate(zip(grads, params)):
             exp_avg = self.exp_avg[i]
-            grad = grads[i]
 
             if self.weight_decay != 0:
                 grad += self.weight_decay * param
@@ -50,7 +48,6 @@ class Adam(tf.Module):
 
         super(Adam, self).__init__(name)
 
-        self.params = params
         self.amsgrad = amsgrad
         self.beta1 = beta1
         self.beta2 = beta2
@@ -64,7 +61,7 @@ class Adam(tf.Module):
         if self.amsgrad:
             self.max_exp_avg_sq = []
 
-        for param in self.params:
+        for param in params:
             self.exp_avg.append(tf.Variable(
                 initial_value=tf.zeros(param.numpy().shape),
                 trainable=False,
@@ -81,12 +78,12 @@ class Adam(tf.Module):
                     trainable=False,
                     name="{}_{}_max_exp_avg_sq".format(name, param.name)))
 
-    def __call__(self, grads):
+    def __call__(self, grads, params):
+
         self.step += 1
-        for i, param in enumerate(self.params):
+        for i, (grad, param) in enumerate(zip(grads, params)):
             exp_avg = self.exp_avg[i]
             exp_avg_sq = self.exp_avg_sq[i]
-            grad = grads[i]
 
             bias_correction1 = 1 - self.beta1 ** self.step
             bias_correction2 = 1 - self.beta2 ** self.step
