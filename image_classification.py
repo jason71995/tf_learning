@@ -2,7 +2,8 @@ import tensorflow as tf
 from tensorflow.keras.datasets import mnist, cifar10
 from lib.optimizers import Adam
 from lib.utils import set_gpu
-from lib.models import LeNet5, LeNet_300_100, VGG10, VGG16
+from lib.models.lenet import LeNet5, LeNet_300_100
+from lib.models.vgg import VGG10, VGG16
 import math
 import numpy as np
 
