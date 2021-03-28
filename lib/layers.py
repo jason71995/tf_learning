@@ -38,14 +38,14 @@ class Conv2D(tf.Module):
 
 class BatchNormalization(tf.Module):
 
-    def __init__(self, feature_dim, momentum=0.9, name=None):
+    def __init__(self, feature_dim, momentum=0.99, name=None):
         super(BatchNormalization, self).__init__(name)
         self.momentum = momentum
 
-        self.std = tf.Variable(
+        self.var = tf.Variable(
             initial_value=tf.ones((feature_dim,)),
             trainable=False,
-            name="{}_std".format(name))
+            name="{}_var".format(name))
         self.mean = tf.Variable(
             initial_value=tf.zeros((feature_dim,)),
             trainable=False,
@@ -62,14 +62,11 @@ class BatchNormalization(tf.Module):
     def __call__(self, inputs, training):
 
         if training:
-            in_rank = tf.rank(inputs)
-            axis = tf.range(in_rank)[:-1]
-            in_mean = tf.reduce_mean(inputs, axis)
-            in_std = tf.math.reduce_std(inputs, axis)
-            self.mean.assign((1.0-self.momentum)*in_mean+self.momentum*self.mean)
-            self.std.assign((1.0-self.momentum)*in_std+self.momentum*self.std)
+            axis = tf.range(tf.rank(inputs))[:-1]
+            self.mean.assign((1.0-self.momentum)*tf.reduce_mean(inputs, axis)+self.momentum*self.mean)
+            self.var.assign((1.0-self.momentum)*tf.math.reduce_variance(inputs, axis)+self.momentum*self.var)
 
-        y = (inputs-self.mean)/(self.std+1e-7)
+        y = (inputs-self.mean)/tf.sqrt(self.var+1e-4)
         y = self.gamma*y+self.beta
         return y
 
