@@ -39,7 +39,7 @@ class Conv2D(tf.Module):
 
 
 class BatchNormalization(tf.Module):
-    def __init__(self, feature_dim, momentum=0.99, epsilon=1e-4, name=None):
+    def __init__(self, feature_dim, momentum=0.99, epsilon=0.001, name=None):
         super(BatchNormalization, self).__init__(name)
         self.momentum = momentum
         self.epsilon = epsilon
