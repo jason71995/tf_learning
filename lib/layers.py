@@ -39,9 +39,10 @@ class Conv2D(tf.Module):
 
 
 class BatchNormalization(tf.Module):
-    def __init__(self, feature_dim, momentum=0.99, name=None):
+    def __init__(self, feature_dim, momentum=0.99, epsilon=1e-4, name=None):
         super(BatchNormalization, self).__init__(name)
         self.momentum = momentum
+        self.epsilon = epsilon
         with self.name_scope:
             self.var = tf.Variable(
                 initial_value=tf.ones((feature_dim,)),
@@ -64,23 +65,7 @@ class BatchNormalization(tf.Module):
 
         if training:
             axis = tf.range(tf.rank(inputs))[:-1]
-            self.mean.assign((1.0-self.momentum)*tf.reduce_mean(inputs, axis)+self.momentum*self.mean)
-            self.var.assign((1.0-self.momentum)*tf.math.reduce_variance(inputs, axis)+self.momentum*self.var)
-
-        y = (inputs-self.mean)/tf.sqrt(self.var+1e-4)
-        y = self.gamma*y+self.beta
-        return y
-
-
-class Dropout(tf.Module):
-    def __init__(self, drop_rate, name=None):
-        super(Dropout, self).__init__(name)
-        self.drop_rate = drop_rate
-
-    def __call__(self, inputs, training):
-        if training:
-            # return tf.nn.dropout(inputs, self.rate)
-            mask = tf.cast(tf.random.uniform((tf.shape(inputs)[-1], ), 0.0, 1.0) > self.drop_rate, "float32")
-            return mask * inputs / (1.0-self.drop_rate)
-
-        return inputs
+            self.mean.assign(self.momentum*self.mean + (1.0-self.momentum)*tf.reduce_mean(inputs, axis))
+            self.var.assign(self.momentum*self.var  + (1.0-self.momentum)*tf.math.reduce_variance(inputs, axis))
+        
+        return tf.nn.batch_normalization(inputs,self.mean,self.var,self.beta,self.gamma,self.epsilon)
