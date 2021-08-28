@@ -17,11 +17,12 @@ class SGD(tf.Module):
         self.step = 0
         self.exp_avg = []
 
-        for param in params:
-            self.exp_avg.append(tf.Variable(
-                initial_value=tf.zeros(param.numpy().shape),
-                trainable=False,
-                name="{}_{}_exp_avg".format(name, param.name)))
+        with self.name_scope:
+            for param in params:
+                self.exp_avg.append(tf.Variable(
+                    initial_value=tf.zeros(param.numpy().shape),
+                    trainable=False,
+                    name="exp_avg/{}".format(param.name)))
 
     def __call__(self, grads, params):
         self.step += 1
@@ -61,22 +62,23 @@ class Adam(tf.Module):
         if self.amsgrad:
             self.max_exp_avg_sq = []
 
-        for param in params:
-            self.exp_avg.append(tf.Variable(
-                initial_value=tf.zeros(param.numpy().shape),
-                trainable=False,
-                name="{}_{}_exp_avg".format(name, param.name)))
-
-            self.exp_avg_sq.append(tf.Variable(
-                initial_value=tf.zeros(param.numpy().shape),
-                trainable=False,
-                name="{}_{}_exp_avg_sq".format(name, param.name)))
-
-            if self.amsgrad:
-                self.max_exp_avg_sq.append(tf.Variable(
+        with self.name_scope:
+            for param in params:
+                self.exp_avg.append(tf.Variable(
                     initial_value=tf.zeros(param.numpy().shape),
                     trainable=False,
-                    name="{}_{}_max_exp_avg_sq".format(name, param.name)))
+                    name="exp_avg/{}".format(param.name)))
+
+                self.exp_avg_sq.append(tf.Variable(
+                    initial_value=tf.zeros(param.numpy().shape),
+                    trainable=False,
+                    name="exp_avg_sq/{}".format(param.name)))
+
+                if self.amsgrad:
+                    self.max_exp_avg_sq.append(tf.Variable(
+                        initial_value=tf.zeros(param.numpy().shape),
+                        trainable=False,
+                        name="max_exp_avg_sq/{}".format(param.name)))
 
     def __call__(self, grads, params):
 
