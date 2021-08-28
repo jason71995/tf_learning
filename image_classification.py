@@ -4,16 +4,16 @@ from lib.optimizers import Adam
 from lib.utils import set_gpu
 from lib.models.lenet import LeNet5, LeNet_300_100
 from lib.models.vgg import VGG10, VGG16
-from lib.models.resnet import ResNet50
+from lib.models.resnet import ResNet18
 import math
 import numpy as np
 
 if __name__ == "__main__":
     set_gpu(0)
-    batch_size = 16
+    batch_size = 128
     num_classes = 10
     epochs = 100
-    dataset_model = "cifar10_resnet50"
+    dataset_model = "cifar10_resnet18"
     have_training_phase = False
     
     if dataset_model == "mnist_lenet_300_100":
@@ -32,10 +32,10 @@ if __name__ == "__main__":
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         image_shape = (32, 32, 3)
         model = VGG16(image_shape, num_classes)
-    elif dataset_model == "cifar10_resnet50":
+    elif dataset_model == "cifar10_resnet18":
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         image_shape = (32, 32, 3)
-        model = ResNet50(image_shape, num_classes)
+        model = ResNet18(image_shape, num_classes)
         have_training_phase = True
     else:
         raise ValueError("Unknown dataset and model: {}.".format(dataset_model))
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     y_train = tf.keras.utils.to_categorical(y_train, num_classes)
     y_test = tf.keras.utils.to_categorical(y_test, num_classes)
 
-    optimizer = Adam(model.trainable_variables, lr=1e-4)
+    optimizer = Adam(model.trainable_variables, lr=1e-3)
 
     @tf.function
     def train_on_batch(batch_inputs, batch_labels):
