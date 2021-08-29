@@ -65,7 +65,17 @@ class BatchNormalization(tf.Module):
 
         if training:
             axis = tf.range(tf.rank(inputs))[:-1]
-            self.mean.assign(self.momentum*self.mean + (1.0-self.momentum)*tf.reduce_mean(inputs, axis))
-            self.var.assign(self.momentum*self.var  + (1.0-self.momentum)*tf.math.reduce_variance(inputs, axis))
+            batch_mean = tf.reduce_mean(inputs, axis)
+            batch_var = tf.math.reduce_variance(inputs, axis)
+            y = (inputs - batch_mean) * tf.math.rsqrt(batch_var + self.epsilon)
+            y = self.gamma * y + self.beta
+            
+            new_mean = self.momentum*self.mean + (1.0-self.momentum)*batch_mean
+            new_var  = self.momentum*self.var  + (1.0-self.momentum)*batch_var
+            self.mean.assign(new_mean)
+            self.var.assign(new_var)
+        else:
+            y = (inputs - self.mean) * tf.math.rsqrt(self.var + self.epsilon)
+            y = self.gamma * y + self.beta
         
-        return tf.nn.batch_normalization(inputs,self.mean,self.var,self.beta,self.gamma,self.epsilon)
+        return y
